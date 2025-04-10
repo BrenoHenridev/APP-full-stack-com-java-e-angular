@@ -1,0 +1,171 @@
+import zipfile
+import os
+
+# Estrutura do projeto backend e frontend simplificado
+project_structure = {
+    "barbershop-app/barbershop-api/src/main/java/com/example/barbershop/controller/AppointmentController.java":
+    """
+package com.example.barbershop.controller;
+
+import com.example.barbershop.model.Appointment;
+import com.example.barbershop.service.AppointmentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/appointments")
+@CrossOrigin(origins = "http://localhost:4200")
+public class AppointmentController {
+
+    @Autowired
+    private AppointmentService service;
+
+    @PostMapping
+    public ResponseEntity<Appointment> create(@RequestBody Appointment appointment) {
+        return ResponseEntity.ok(service.save(appointment));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Appointment>> getAll() {
+        return ResponseEntity.ok(service.findAll());
+    }
+}
+""",
+
+    "barbershop-app/barbershop-api/src/main/java/com/example/barbershop/model/Appointment.java":
+    """
+package com.example.barbershop.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+public class Appointment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String customerName;
+    private String barberName;
+    private LocalDateTime dateTime;
+
+    // Getters and setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getCustomerName() { return customerName; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
+
+    public String getBarberName() { return barberName; }
+    public void setBarberName(String barberName) { this.barberName = barberName; }
+
+    public LocalDateTime getDateTime() { return dateTime; }
+    public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }
+}
+""",
+
+    "barbershop-app/barbershop-api/src/main/java/com/example/barbershop/repository/AppointmentRepository.java":
+    """
+package com.example.barbershop.repository;
+
+import com.example.barbershop.model.Appointment;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+}
+""",
+
+    "barbershop-app/barbershop-api/src/main/java/com/example/barbershop/service/AppointmentService.java":
+    """
+package com.example.barbershop.service;
+
+import com.example.barbershop.model.Appointment;
+import com.example.barbershop.repository.AppointmentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class AppointmentService {
+
+    @Autowired
+    private AppointmentRepository repository;
+
+    public Appointment save(Appointment appointment) {
+        return repository.save(appointment);
+    }
+
+    public List<Appointment> findAll() {
+        return repository.findAll();
+    }
+}
+""",
+
+    "barbershop-app/barbershop-api/src/main/resources/application.properties":
+    """
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.h2.console.enabled=true
+""",
+
+    "barbershop-app/barbershop-api/pom.xml":
+    """
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>barbershop-api</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.0</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+"""
+}
+
+# Caminho do arquivo zip a ser criado
+zip_path = "/mnt/data/barbershop-app.zip"
+
+# Criar o zip com todos os arquivos
+with zipfile.ZipFile(zip_path, 'w') as zipf:
+    for file_path, file_content in project_structure.items():
+        zipf.writestr(file_path, file_content)
+
+zip_path
