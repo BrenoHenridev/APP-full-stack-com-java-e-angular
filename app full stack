@@ -1,0 +1,164 @@
+import zipfile
+
+# Estrutura Angular (simplificada) para o frontend
+angular_structure = {
+    "barbershop-app/barbershop-front/src/app/models/appointment.ts":
+    """
+export interface Appointment {
+  id?: number;
+  customerName: string;
+  barberName: string;
+  dateTime: string;
+}
+""",
+
+    "barbershop-app/barbershop-front/src/app/services/appointment.service.ts":
+    """
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Appointment } from '../models/appointment';
+
+@Injectable({ providedIn: 'root' })
+export class AppointmentService {
+  private baseUrl = 'http://localhost:8080/api/appointments';
+
+  constructor(private http: HttpClient) {}
+
+  getAll(): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(this.baseUrl);
+  }
+
+  create(appointment: Appointment): Observable<Appointment> {
+    return this.http.post<Appointment>(this.baseUrl, appointment);
+  }
+}
+""",
+
+    "barbershop-app/barbershop-front/src/app/app.module.ts":
+    """
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { HttpClientModule } from '@angular/common/http';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AppointmentFormComponent } from './components/appointment-form/appointment-form.component';
+import { AppointmentListComponent } from './components/appointment-list/appointment-list.component';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    AppointmentFormComponent,
+    AppointmentListComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+""",
+
+    "barbershop-app/barbershop-front/src/app/app-routing.module.ts":
+    """
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { AppointmentFormComponent } from './components/appointment-form/appointment-form.component';
+import { AppointmentListComponent } from './components/appointment-list/appointment-list.component';
+
+const routes: Routes = [
+  { path: '', component: AppointmentListComponent },
+  { path: 'new', component: AppointmentFormComponent }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+""",
+
+    "barbershop-app/barbershop-front/src/app/components/appointment-form/appointment-form.component.ts":
+    """
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { AppointmentService } from '../../services/appointment.service';
+
+@Component({
+  selector: 'app-appointment-form',
+  templateUrl: './appointment-form.component.html'
+})
+export class AppointmentFormComponent {
+  form: FormGroup;
+
+  constructor(private fb: FormBuilder, private service: AppointmentService) {
+    this.form = this.fb.group({
+      customerName: [''],
+      barberName: [''],
+      dateTime: ['']
+    });
+  }
+
+  submit() {
+    this.service.create(this.form.value).subscribe(() => {
+      alert('Agendamento criado com sucesso!');
+      this.form.reset();
+    });
+  }
+}
+""",
+
+    "barbershop-app/barbershop-front/src/app/components/appointment-form/appointment-form.component.html":
+    """
+<h2>Novo Agendamento</h2>
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <input formControlName="customerName" placeholder="Cliente" /><br />
+  <input formControlName="barberName" placeholder="Barbeiro" /><br />
+  <input formControlName="dateTime" type="datetime-local" /><br />
+  <button type="submit">Agendar</button>
+</form>
+""",
+
+    "barbershop-app/barbershop-front/src/app/components/appointment-list/appointment-list.component.ts":
+    """
+import { Component, OnInit } from '@angular/core';
+import { AppointmentService } from '../../services/appointment.service';
+import { Appointment } from '../../models/appointment';
+
+@Component({
+  selector: 'app-appointment-list',
+  templateUrl: './appointment-list.component.html'
+})
+export class AppointmentListComponent implements OnInit {
+  appointments: Appointment[] = [];
+
+  constructor(private service: AppointmentService) {}
+
+  ngOnInit() {
+    this.service.getAll().subscribe(data => this.appointments = data);
+  }
+}
+""",
+
+    "barbershop-app/barbershop-front/src/app/components/appointment-list/appointment-list.component.html":
+    """
+<h2>Agendamentos</h2>
+<div *ngFor="let a of appointments">
+  <p><strong>{{a.customerName}}</strong> com <strong>{{a.barberName}}</strong> em {{a.dateTime | date:'short'}}</p>
+</div>
+"""
+}
+
+# Adiciona arquivos Angular ao zip existente
+zip_path = "/mnt/data/barbershop-app.zip"
+with zipfile.ZipFile(zip_path, 'a') as zipf:
+    for file_path, file_content in angular_structure.items():
+        zipf.writestr(file_path, file_content)
+
+zip_path
